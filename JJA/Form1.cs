@@ -111,7 +111,7 @@ namespace JJA
             catch (Exception ex)
             {
 
-                    MessageBox.Show("Vous ete en train de utiliser/ouvert le file excel, il faut fermer pour nous utilisons.");
+                    MessageBox.Show("Vous êtes en train d'utiliser/ouvrir le fichier excel, il faut le fermer pour que nous puissions l'utiliser.");
             }
             return dtXLS;
 
@@ -168,13 +168,13 @@ namespace JJA
             }
             else
             {
-                MessageBox.Show("L'action n'est pas lancé, ou vous avez vide dans le excel.");
+                MessageBox.Show("L'action n'est pas lancée, ou votre fichier excel est vide.");
             }
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Quand vous saisez 'Commander', Vous devez saisir la reference EXACT du produit.");
+            MessageBox.Show("Quand vous saisissez 'Commander', Vous devez saisir la reference EXACT du produit.");
         }
 
 
