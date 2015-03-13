@@ -120,7 +120,7 @@ namespace JJA
         private async void Form1_Load(object sender, EventArgs e)
         {
             MainwebBrowser.Navigate("http://easy-rea.com/");
-            await Task.Delay(5000);
+            await Task.Delay(3000);
             URLTextBox.Text = MainwebBrowser.Url.ToString();
             MainwebBrowser.StringByEvaluatingJavaScriptFromString(
                 "document.getElementById('login_login').value = 'aubiere'");
@@ -160,8 +160,9 @@ namespace JJA
             {
                 timer1.Stop();
                 ValiderButton.Enabled = true;
-                MessageBox.Show("Le Chargement est fini, maintemant la page va etre actualiser...");
                 EnableControl();
+                Form3 from3 = new Form3();
+                from3.ShowDialog();
                 progressBar1.Value = 0;
                 MainwebBrowser.Reload();
             }
