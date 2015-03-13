@@ -49,7 +49,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(233, 13);
             this.label1.TabIndex = 1;
-            this.label1.Text = "Les articles qui ne peuvent pas etre commandé:";
+            this.label1.Text = "Les articles qui ne peuvent pas être commandés:";
             this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // Form2
