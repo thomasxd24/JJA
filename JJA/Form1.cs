@@ -222,26 +222,31 @@ namespace JJA
                 await Task.Delay(4000);
                 MainwebBrowser.Reload();
                 await Task.Delay(2000);
-                var sb = new StringBuilder();
                 DataTable dt = LoadXls(openFileDialog1.FileName);
+                DataTable missingProductTable = new DataTable();
+                missingProductTable.Columns.Add("Libellé", typeof(String));
+                missingProductTable.Columns.Add("Référence", typeof(String));
                 foreach (DataRow row in dt.Rows)
                 {
                     string text = row["Référence"].ToString();
+                    string name = row["Libellé"].ToString();
                     string caps = text.ToUpper();
                     if (caps.Any(char.IsDigit) & _checkcancelled == false)
                     {
                         MainwebBrowser.StringByEvaluatingJavaScriptFromString(
                             "function GetMissingProduct() {if (document.getElementById('product" + caps +
-                            "') == null) { return '" + caps + "'; }};");
+                            "') == null) { return 'true'; }};");
                         var missingProduct = (string) MainwebBrowser.Document.InvokeScriptMethod("GetMissingProduct");
-                        if (missingProduct != null)
+                        if (missingProduct == "true")
                         {
-                            sb.Append(missingProduct + Environment.NewLine);
+                            DataRow missingProductRow = missingProductTable.NewRow();
+                            missingProductRow["Libellé"] = name;
+                            missingProductRow["Référence"] = text;
+                            missingProductTable.Rows.Add(missingProductRow);
                         }
                     }
                 }
-                string missingProductString = sb.ToString();
-                var f = new Form2(missingProductString);
+                var f = new Form2(missingProductTable);
                 f.Show();
             }
         }
@@ -324,8 +329,8 @@ namespace JJA
                     }
                 }
                 string missingProductString = sb.ToString();
-                var f = new Form2(missingProductString);
-                f.Show();
+                //var f = new Form2(missingProductString);
+                //f.Show();
             }
         }
 

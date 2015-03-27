@@ -35,6 +35,8 @@ namespace JJA
             this.ProductTextBox = new System.Windows.Forms.TextBox();
             this.RechercheButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
             this.button5 = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.label3 = new System.Windows.Forms.Label();
@@ -56,8 +58,6 @@ namespace JJA
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -72,7 +72,7 @@ namespace JJA
             this.MainwebBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MainwebBrowser.Location = new System.Drawing.Point(0, 0);
             this.MainwebBrowser.Name = "MainwebBrowser";
-            this.MainwebBrowser.Size = new System.Drawing.Size(1388, 698);
+            this.MainwebBrowser.Size = new System.Drawing.Size(1276, 698);
             this.MainwebBrowser.TabIndex = 0;
             this.MainwebBrowser.Url = null;
             this.MainwebBrowser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.MainwebBrowser_DocumentCompleted);
@@ -114,6 +114,23 @@ namespace JJA
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "JJA Produit";
             this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(1191, 37);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(0, 13);
+            this.label5.TabIndex = 13;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(1191, 53);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(30, 13);
+            this.label4.TabIndex = 12;
+            this.label4.Text = "Libre";
             // 
             // button5
             // 
@@ -299,7 +316,7 @@ namespace JJA
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1388, 140);
+            this.panel1.Size = new System.Drawing.Size(1276, 140);
             this.panel1.TabIndex = 6;
             // 
             // panel2
@@ -308,31 +325,14 @@ namespace JJA
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel2.Location = new System.Drawing.Point(0, 140);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1388, 698);
+            this.panel2.Size = new System.Drawing.Size(1276, 698);
             this.panel2.TabIndex = 7;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(1191, 53);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(30, 13);
-            this.label4.TabIndex = 12;
-            this.label4.Text = "Libre";
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(1191, 37);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(0, 13);
-            this.label5.TabIndex = 13;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1388, 838);
+            this.ClientSize = new System.Drawing.Size(1276, 838);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Name = "Form1";
