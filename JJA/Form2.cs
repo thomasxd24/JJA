@@ -24,5 +24,18 @@ namespace JJA
         {
 
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Produit Réference");
+            DataRow dr = dt.NewRow();
+            for (int i = 0; i < richTextBox1.Lines.Length; i++)
+            {
+                string text = richTextBox1.Lines[i];
+                dr["Produit Réference"] = text;
+            }
+            dt.Rows.Add(dr);
+        }
     }
 }

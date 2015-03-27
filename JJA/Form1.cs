@@ -1,31 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Data.OleDb;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using WebKit;
-using WebKit.DOM;
 
 namespace JJA
 {
     public partial class Form1 : Form
     {
-
         public Form1()
         {
             InitializeComponent();
         }
 
-
-        public void URLButton_Click(object sender, EventArgs e)
-        {
-            MainwebBrowser.Navigate(URLTextBox.Text);
-        }
+        private bool _checkcancelled = false;
 
         private void RechercheButton_Click(object sender, EventArgs e)
         {
@@ -42,25 +32,71 @@ namespace JJA
             }
             else
             {
+                _checkcancelled = false;
                 DisableControl();
                 timer1.Enabled = true;
                 timer1.Start();
+                button5.Visible = true;
+                button5.Enabled = true;
                 timer1.Interval = 1000;
                 ValiderButton.Enabled = false;
                 DataTable dt = LoadXls(openFileDialog1.FileName);
                 if (dt != null)
                 {
-                    progressBar1.Maximum = dt.Rows.Count*2;
                     foreach (DataRow row in dt.Rows)
                     {
-                        string text = row[0].ToString();
-                        MainwebBrowser.StringByEvaluatingJavaScriptFromString("updateProduct('" + text +
-                                                                              "','0','/products/update',1,110,'divAlertQteDispoMessage',0,900,'divAlertNbRowsMessage');");
-                        await Task.Delay(1500);
+                        string text = row["Référence"].ToString();
+                        string qtestring = row["Nb# Colis"].ToString();
+                        int qte;
+                        int.TryParse(qtestring, out qte);
+                            if (text.Any(char.IsDigit) & _checkcancelled == false)
+                            {
+                                if (qte < 1)
+                                {
+                                    if (
+                                        MessageBox.Show("La Product: " + row["Libellé"].ToString() +
+                                                        " avec la Référence : " + text +
+                                                        ","+Environment.NewLine+" Vous avez demandé de commmander " + qtestring +
+                                                        " Carton "+Environment.NewLine+".Vous voulez commander 1 carton ou ne commander pas?","Attention",MessageBoxButtons.YesNo) ==
+                                        DialogResult.Yes)
+                                    {
+                                        qte = 1;
+                                    }
+                                    
+                                }
+                                progressBar1.Maximum = dt.Rows.Count*2;
+                                MainwebBrowser.StringByEvaluatingJavaScriptFromString(
+                                    string.Format(
+                                        "updateProduct('{0}','0','/products/update',{1},110,'divAlertQteDispoMessage',0,900,'divAlertNbRowsMessage');",
+                                        text, qte));
+                                label5.Text = "Sur:";
+                                label4.Text = row["Libellé"].ToString();
+                                label3.Text = text;
+                                await Task.Delay(1500);
+                            }
+                            else
+                            {
+                                timer1.Stop();
+                                timer1.Enabled = false;
+                                label4.Text = "Annulé...";
+                                await Task.Delay(2000);
+                                label4.Text = "Libre";
+                                break;
+
+                            }
                     }
                 }
-
-
+                else
+                {
+                    timer1.Stop();
+                    timer1.Enabled = false;
+                    progressBar1.Value = 0;
+                    EnableControl();
+                    button5.Visible = false;
+                    label4.Text = "Annulé...";
+                    await Task.Delay(2000);
+                    label4.Text = "Libre";
+                }
             }
         }
 
@@ -74,7 +110,7 @@ namespace JJA
 
         private DataTable LoadXls(string strFile)
         {
-            DataTable dtXLS = new DataTable("importedexcel");
+            var dtXLS = new DataTable("importedexcel");
 
             try
             {
@@ -95,50 +131,48 @@ namespace JJA
                             strFile);
                 }
 
-                OleDbConnection SQLConn = new OleDbConnection(strConnectionString);
+                var SQLConn = new OleDbConnection(strConnectionString);
                 SQLConn.Open();
 
-                OleDbDataAdapter SQLAdapter = new OleDbDataAdapter();
-                string sql = "SELECT * FROM [sheet1$]";
+                var SQLAdapter = new OleDbDataAdapter();
+                DataTable dtSchema = SQLConn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
+                string Sheet1 = dtSchema.Rows[0].Field<string>("TABLE_NAME");
+                string sql = string.Format("SELECT * FROM [{0}]", Sheet1);
 
-                OleDbCommand selectCMD = new OleDbCommand(sql, SQLConn);
+                var selectCMD = new OleDbCommand(sql, SQLConn);
                 SQLAdapter.SelectCommand = selectCMD;
 
                 SQLAdapter.Fill(dtXLS);
                 SQLConn.Close();
-
             }
             catch (Exception ex)
             {
-
-                    MessageBox.Show("Vous êtes en train d'utiliser/ouvrir le fichier excel, il faut le fermer pour que nous puissions l'utiliser.");
+                progressBar1.Maximum = 0;
+                MessageBox.Show(
+                    "Vous êtes en train d'utiliser/ouvrir le fichier excel, il faut le fermer pour que nous puissions l'utiliser.Oringinal Original Erruer:"+ ex.ToString());
+                dtXLS = null;
             }
             return dtXLS;
-
         }
 
-        private async void Form1_Load(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
             MainwebBrowser.Navigate("http://easy-rea.com/");
-            await Task.Delay(3000);
-            URLTextBox.Text = MainwebBrowser.Url.ToString();
-            MainwebBrowser.StringByEvaluatingJavaScriptFromString(
-                "document.getElementById('login_login').value = 'aubiere'");
-            MainwebBrowser.StringByEvaluatingJavaScriptFromString(
-                "document.getElementById('login_password').value = 'tonio'");
-            MainwebBrowser.StringByEvaluatingJavaScriptFromString("document.forms['loginForm'].submit()");
-
         }
 
         private void QuantitéAdd_Click(object sender, EventArgs e)
         {
-            MainwebBrowser.StringByEvaluatingJavaScriptFromString("updateProduct('" + ProductTextBox + "','0','/products/update',1,110,'divAlertQteDispoMessage',0,900,'divAlertNbRowsMessage');");
+            MainwebBrowser.StringByEvaluatingJavaScriptFromString("updateProduct('" + ProductTextBox +
+                                                                  "','0','/products/update',1,110,'divAlertQteDispoMessage',0,900,'divAlertNbRowsMessage');");
         }
 
         private void ProductTextBox_TextChanged(object sender, EventArgs e)
         {
-            MainwebBrowser.StringByEvaluatingJavaScriptFromString(
-                "document.getElementById('products_reference').value = '" + ProductTextBox.Text + "';");
+            if (MainwebBrowser.Url.ToString() == "http://easy-rea.com/products/index")
+            {
+                MainwebBrowser.StringByEvaluatingJavaScriptFromString(
+                    "document.getElementById('products_reference').value = '" + ProductTextBox.Text + "';");
+            }
         }
 
         private void ProductTextBox_KeyDown(object sender, KeyEventArgs e)
@@ -151,18 +185,16 @@ namespace JJA
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            int rowcount = LoadXls(openFileDialog1.FileName).Rows.Count;
-            if (progressBar1.Value != rowcount*2)
+            if (progressBar1.Value != progressBar1.Maximum)
             {
                 progressBar1.Value++;
             }
-            else if (progressBar1.Value == rowcount*2)
+            else if (progressBar1.Value == progressBar1.Maximum)
             {
+
                 timer1.Stop();
                 ValiderButton.Enabled = true;
                 EnableControl();
-                Form3 from3 = new Form3();
-                from3.ShowDialog();
                 progressBar1.Value = 0;
                 MainwebBrowser.Reload();
             }
@@ -177,7 +209,6 @@ namespace JJA
             MessageBox.Show("Quand vous saisissez 'Commander', Vous devez saisir la reference EXACT du produit.");
         }
 
-
         public async void button2_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(PathTextBox.Text))
@@ -191,42 +222,61 @@ namespace JJA
                 await Task.Delay(4000);
                 MainwebBrowser.Reload();
                 await Task.Delay(2000);
-                StringBuilder sb = new StringBuilder();
+                var sb = new StringBuilder();
                 DataTable dt = LoadXls(openFileDialog1.FileName);
                 foreach (DataRow row in dt.Rows)
                 {
-                    string text = row[0].ToString();
+                    string text = row["Référence"].ToString();
                     string caps = text.ToUpper();
-                    MainwebBrowser.StringByEvaluatingJavaScriptFromString("function GetMissingProduct() {if (document.getElementById('product" + caps + "') == null) { return '" + caps + "'; }};");
-                    string missingProduct = (string)MainwebBrowser.Document.InvokeScriptMethod("GetMissingProduct");
-                    if (missingProduct != null)
+                    if (caps.Any(char.IsDigit) & _checkcancelled == false)
                     {
-                    sb.Append(missingProduct + Environment.NewLine);
+                        MainwebBrowser.StringByEvaluatingJavaScriptFromString(
+                            "function GetMissingProduct() {if (document.getElementById('product" + caps +
+                            "') == null) { return '" + caps + "'; }};");
+                        var missingProduct = (string) MainwebBrowser.Document.InvokeScriptMethod("GetMissingProduct");
+                        if (missingProduct != null)
+                        {
+                            sb.Append(missingProduct + Environment.NewLine);
+                        }
                     }
-
                 }
-               string  missingProductString = sb.ToString();
-               Form2 f = new Form2(missingProductString);
-               f.Show();
-
-
+                string missingProductString = sb.ToString();
+                var f = new Form2(missingProductString);
+                f.Show();
             }
-
-
-
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private async void button3_Click(object sender, EventArgs e)
         {
-            DisableControl();
+            if (string.IsNullOrEmpty(richTextBox1.Text))
+            {
+                MessageBox.Show("Vous n'avez pas saisir les produit réference!", "Attention", MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+            }
+            else
+            {
+                DisableControl();
+                timer1.Enabled = true;
+                timer1.Start();
+                timer1.Interval = 1000;
+                progressBar1.Maximum = richTextBox1.Lines.Length*2;
+                for (int i = 0; i < richTextBox1.Lines.Length; i++)
+                {
+                    string text = richTextBox1.Lines[i];
+                    MainwebBrowser.StringByEvaluatingJavaScriptFromString("updateProduct('" + text +
+                                                                          "','0','/products/update',1,110,'divAlertQteDispoMessage',0,900,'divAlertNbRowsMessage');");
+                    label3.Text = "Sur " + text;
+                    await Task.Delay(1500);
+                }
+            }
         }
 
-        public void DisableControl()
+        private void DisableControl()
         {
             groupBox2.Enabled = false;
             groupBox3.Enabled = false;
             groupBox4.Enabled = false;
-            groupBox5.Enabled = false;
+            MainwebBrowser.Enabled = false;
         }
 
         private void EnableControl()
@@ -234,13 +284,73 @@ namespace JJA
             groupBox2.Enabled = true;
             groupBox3.Enabled = true;
             groupBox4.Enabled = true;
-            groupBox5.Enabled = true;
+            MainwebBrowser.Enabled = true;
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        private void progressBar1_Click(object sender, EventArgs e)
         {
-            Form3 from3 = new Form3();
-            from3.ShowDialog();
+        }
+
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private async void button4_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(richTextBox1.Text))
+            {
+                MessageBox.Show("Vous n'avez pas saisir les produit réference!", "Attention", MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+            }
+            else
+            {
+                MainwebBrowser.Navigate("http://easy-rea.com/cart/detail");
+                await Task.Delay(2000);
+                MainwebBrowser.Reload();
+                await Task.Delay(2000);
+                var sb = new StringBuilder();
+                for (int i = 0; i < richTextBox1.Lines.Length; i++)
+                {
+                    string text = richTextBox1.Lines[i];
+                    string caps = text.ToUpper();
+                    MainwebBrowser.StringByEvaluatingJavaScriptFromString(
+                        "function GetMissingProduct() {if (document.getElementById('product" + caps +
+                        "') == null) { return '" + caps + "'; }};");
+                    var missingProduct = (string) MainwebBrowser.Document.InvokeScriptMethod("GetMissingProduct");
+                    if (missingProduct != null)
+                    {
+                        sb.Append(missingProduct + Environment.NewLine);
+                    }
+                }
+                string missingProductString = sb.ToString();
+                var f = new Form2(missingProductString);
+                f.Show();
+            }
+        }
+
+        private void MainwebBrowser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
+        {
+            if (MainwebBrowser.Url.AbsoluteUri == "http://easy-rea.com/")
+            {
+                MainwebBrowser.StringByEvaluatingJavaScriptFromString(
+                    "document.getElementById('login_login').value = 'aubiere'");
+                MainwebBrowser.StringByEvaluatingJavaScriptFromString(
+                    "document.getElementById('login_password').value = 'tonio'");
+                MainwebBrowser.StringByEvaluatingJavaScriptFromString("document.forms['loginForm'].submit()");
+            }
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            timer1.Stop();
+            ValiderButton.Enabled = true;
+            EnableControl();
+            progressBar1.Value = 0;
+            _checkcancelled = true;
+            button5.Visible = false;
+            label5.Text = null;
+            label3.Text = null;
         }
     }
 }
